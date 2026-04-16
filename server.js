@@ -20,11 +20,23 @@ app.get("/ping", (req, res) =>{
 
 app.post("/api/chat", async (req, res) => {
     try {
-        console.log("Body recebido no /chat: ", req.body);
-        const { message, contextId, chatName } = req.body;
+        // console.log("Body recebido no /chat: ", req.body);
+        // const { message, contextId, chatName } = req.body;
 
-        const payload = { contextId, prompt: message };
-        console.log("Payload enviado ao GPTMaker: ", payload)
+        // const payload = { contextId, prompt: message };
+        // console.log("Payload enviado ao GPTMaker: ", payload)
+
+      // 1. Log de sanidade: Verifica se as variáveis do .env foram carregadas
+        console.log("--- DEBUG CONFIG ---");
+        console.log("Agent ID carregado:", process.env.GPTMAKER_AGENT_ID ? "Sim" : "Não");
+        console.log("Token carregado (primeiros 5 caracteres):", process.env.GPTMAKER_TOKEN ? process.env.GPTMAKER_TOKEN.substring(0, 5) + "..." : "NÃO CARREGADO");
+
+        const { message, contextId, chatName } = req.body;
+        
+        // 2. Log dos dados de entrada
+        console.log("--- DEBUG INPUT ---");
+        console.log("Message:", message);
+        console.log("ContextId:", contextId);
 
         const response = await fetch(
           `https://api.gptmaker.ai/v2/agent/${GPTMAKER_AGENT_ID}/conversation`,  
@@ -45,7 +57,11 @@ app.post("/api/chat", async (req, res) => {
         const data = await response.json();
 
         if(!response.ok) {
-            return res.status(response.status).json({ error: data })
+            // 3. Log detalhado do erro da API
+            console.error("--- ERRO NA API GPTMAKER ---");
+            console.error("Status:", response.status);
+            console.error("Corpo do erro:", JSON.stringify(data, null, 2));
+            return res.status(response.status).json({ error: data });
         }
 
         console.log(data);
